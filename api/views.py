@@ -7,6 +7,9 @@ from rest_framework import status
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
+from api.models import Disease
+from api.serializers import DiseaseSerializer
+
 # 🛠 Authentication Views
 @api_view(['POST'])
 def signup_view(request):
@@ -33,27 +36,37 @@ def login_view(request):
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-# 🛠 Disease API Views
-class DiseaseListView(APIView):
-    def get(self, request):
-        sample_data = [
-            {"name": "Disease 1", "description": "Description of Disease 1"},
-            {"name": "Disease 2", "description": "Description of Disease 2"},
-            {"name": "Disease 3", "description": "Description of Disease 3"}
-        ]
-        return JsonResponse(sample_data, safe=False)
+# 🛠 List and Create Diseases
+@api_view(['GET', 'POST'])
+def disease_list(request):
+    if request.method == 'GET':
+        diseases = Disease.objects.all()
+        serializer = DiseaseSerializer(diseases, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = DiseaseSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def search_diseases(request):
-    query = request.GET.get('q', '')
-    if query:
-        # Example filtered data (in real app, use database filter)
-        sample_data = [
-            {"name": "Disease 1", "description": "Description of Disease 1"},
-            {"name": "Disease 2", "description": "Description of Disease 2"},
-            {"name": "Disease 3", "description": "Description of Disease 3"}
-        ]
-        filtered = [d for d in sample_data if query.lower() in d['name'].lower()]
-        return JsonResponse(filtered, safe=False)
-    else:
-        return JsonResponse([], safe=False)
+# 🛠 Retrieve, Update, Delete a Disease
+@api_view(['GET', 'PUT', 'DELETE'])
+def disease_detail(request, pk):
+    try:
+        disease = Disease.objects.get(pk=pk)
+    except Disease.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = DiseaseSerializer(disease)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = DiseaseSerializer(disease, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        disease.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

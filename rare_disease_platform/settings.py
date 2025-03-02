@@ -37,9 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',     # ✅ Ensure this is included for Django REST Framework
+    'api',                # ✅ Add this line to register your app
 ]
 
-'rest_framework',
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -123,3 +126,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'rare_disease_db',       # Database name you created
+        'USER': 'postgres',     # Replace with your PostgreSQL username
+        'PASSWORD': 'hackychan',      # Replace with your PostgreSQL password
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
